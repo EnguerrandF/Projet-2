@@ -1,13 +1,25 @@
 import requests
 import csv
 import time
+import os
+import urllib.request
+import re
 from bs4 import BeautifulSoup
+from shutil import copyfileobj
 
 class Scrap:
         
     def __init__(self, url_home_page):
         self.url_home_page = url_home_page
-        
+    
+    def creation_dir(self, choice_categorie):
+        if not os.path.exists("books"):
+            os.makedirs("books")
+            
+        for title, url in choice_categorie.items():   
+            if not os.path.exists("books/" + title):
+                os.makedirs("books/" + title)
+            
     def take_url_and_category_page(self):
         page = requests.get(self.url_home_page)
         html = BeautifulSoup(page.content, "html.parser")
@@ -28,7 +40,6 @@ class Scrap:
             for element in balise:
                 url = element.find("a")["href"]
                 list_urls_book_page.append("http://books.toscrape.com/catalogue/" + url[6:])
-                #print("http://books.toscrape.com/catalogue/" + url[6:])
         else:
             for element in balise:
                 url = element.find("a")["href"]
@@ -89,70 +100,73 @@ class Scrap:
     def save_in_csv(self, name_file, list_info_book):
         date = str(time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()))
         header = ["product_page_url", "universal_produc_code", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"] 
-        destination_csv = "./CSV/" + name_file + '_' + date + ".csv" 
-        
+        destination_file = "./books/" + name_file + "/" +  name_file + '_' + date + "/"
+        destination_csv = destination_file + name_file + '_' + date + ".csv"
+        os.makedirs(destination_file)
+        self.save_img(list_info_book, destination_file)
         with open(destination_csv, "w", encoding='utf-8') as fichier_CSV:
             writer = csv.writer(fichier_CSV, delimiter=",")
             writer.writerow(header)
 
             for book in list_info_book:
                 writer.writerow(book)
+    
+    def save_img(self, list_info_book, destination_download): 
+            for image in list_info_book:
+                new_title = re.sub('\~|\!|\@|\#|\$v%|\^|\&|\*|\(|\)|\+|\=|\{|\}|\[|\]|\:|\"|\;|\<|\>|\,|\.|\?|\/', '', image[2])
+                print("Save image " + new_title)
+                urllib.request.urlretrieve(image[9], destination_download + new_title + ".jpg")
+
 
 class Screen(Scrap):
     def __init__(self, url_home_page):
         super().__init__(url_home_page)
         
-    def display_play(self):
+    def display_play(self, error):
         list_category = self.take_url_and_category_page()
-        self.display_list(list_category, False)
-        selection_category = int(input())
-        
-        #print(list_category)
-        
-        if selection_category > len(list_category) - 1 or selection_category < 0:
-            self.display_list(list_category, True)
+        self.display_list(list_category, error)
+        selection_category = input()
+
+        if len(selection_category) > 2 or selection_category.replace(" ", "").isalpha() or int(selection_category) > len(list_category) - 1 or int(selection_category) < 0:
+            self.display_play(True)
         else:
             url_selection = self.take_url_selection(list_category, selection_category)
-            #super().take_url_book_page(self.take_url_selection(list_category, selection_category))
+            print(url_selection)
             return url_selection
         
     def display_list(self, list_category, error):
-        i = 0
-        for title_page, url in list_category.items():
-            print(i, title_page)
-            i += 1
-            
+        i = 0       
         if error == True:
             print("Le chiffre sélectionner n'est pas Valide")
             print("Veuillez en choisir un valide")   
         elif error ==  False:
+            for title_page, url in list_category.items():
+                print(i, title_page)
+                i += 1
             print("Veuillez sélectionner le chiffre de la catégory")
             
     
     def take_url_selection(self, list_category, selection_category):
         i = 0
-        #print(list_category)
         if int(selection_category) == 0:
             list_category.pop("Books")
             return list_category
         else:
             for title_page, url in list_category.items():
-                if i == selection_category:
+                if i == int(selection_category):
                     return {title_page: url}
                 i += 1
-
-            
-            
+        
 def start_scrape():
     start = Screen("http://books.toscrape.com/index.html")
-    choice_categorie = start.display_play()
-    #print(choice_categorie, "coucou")
+    choice_categorie = start.display_play(False)
+    start.creation_dir(choice_categorie)
+    
     for title, url_page in choice_categorie.items():
         list_url_book = start.take_url_book_page(url_page, [])
-        print(len(list_url_book), "Book in the catégory")
+        print(len(list_url_book), "Book in the catégory " + title)
         list_info_book = start.extract_information_book(list_url_book)
-        #print(list_info_book)
         start.save_in_csv(title, list_info_book)
+        print("End")
 
 start_scrape()
-#Scrap("http://books.toscrape.com/index.html").take_url_book_page("http://books.toscrape.com/catalogue/category/books/childrens_11/index.html")
