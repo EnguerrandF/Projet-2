@@ -1,5 +1,5 @@
 - Sélectionner la commande Git ci-dessous afin de récupérer le projet.
-    git clone https://github.com/EnguerrandF/Projet-2.git
+git clone https://github.com/EnguerrandF/Projet-2.git
 
 - Accéder au dossier.
 
