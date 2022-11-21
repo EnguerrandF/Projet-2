@@ -87,7 +87,7 @@ class Scrap:
             try:
                 product_description = html.find(id="product_description").find_next("p").string
             except:
-                product_description = ""
+                product_description = "none"
                 
             title = html.find(class_="product_main").find("h1").string
             product_page_url = url_this_book
@@ -113,7 +113,7 @@ class Scrap:
     
     def save_img(self, list_info_book, destination_download): 
             for image in list_info_book:
-                new_title = re.sub('\~|\!|\@|\#|\$v%|\^|\&|\*|\(|\)|\+|\=|\{|\}|\[|\]|\:|\"|\;|\<|\>|\,|\.|\?|\/', '', image[2])
+                new_title = re.sub('\/|\:|\*|\?|\"|\>|\<|\|', '', image[2])
                 print("Save image " + new_title)
                 urllib.request.urlretrieve(image[9], destination_download + new_title + ".jpg")
 
@@ -137,13 +137,14 @@ class Screen(Scrap):
     def display_list(self, list_category, error):
         i = 0       
         if error == True:
-            print("Le chiffre sélectionner n'est pas Valide")
+            print("Le chiffre sélectionné n'est pas valide")
             print("Veuillez en choisir un valide")   
         elif error ==  False:
             for title_page, url in list_category.items():
                 print(i, title_page)
                 i += 1
-            print("Veuillez sélectionner le chiffre de la catégory")
+            print("Veuillez sélectionner le chiffre de la catégory ")
+            print("Ou 0 pour tout sélectionner ")
             
     
     def take_url_selection(self, list_category, selection_category):
