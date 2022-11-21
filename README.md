@@ -18,4 +18,4 @@
 - Maintenant vous pouvez lancer le programme en executant la commande ci-dessous:
     - python main.py
 
-Vous pouvez maintenant choisir la catégorie que vous voulez récupérer ou tous les catégories en sélectionnant 0. Vous retrouverez les informations stoké dans le dossier "books".
+Vous pouvez maintenant choisir la catégorie que vous voulez récupérer ou toutes les catégories en sélectionnant 0. Vous retrouverez les informations stoké dans le dossier "books".
