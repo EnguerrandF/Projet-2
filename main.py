@@ -76,7 +76,8 @@ class Scrap:
             price_excluding_tax = list_product_information[2]      
             price_including_tax = list_product_information[3]  
             number_available = list_product_information[5]
-            review_rating = list_product_information[6]
+            
+            review_rating = html.find(class_="star-rating")["class"][1]
 
             lien_category = html.find(class_="breadcrumb").find_all("li")
             list_category = []
@@ -167,7 +168,7 @@ def start_scrape():
         list_url_book = start.take_url_book_page(url_page, [])
         print(len(list_url_book), "Book in the catégory " + title)
         list_info_book = start.extract_information_book(list_url_book)
-        start.save_in_csv(title, list_info_book)
+        #start.save_in_csv(title, list_info_book)
         print("End")
 
 start_scrape()
